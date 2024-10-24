@@ -1,0 +1,1 @@
+# Dicion-rio-inteligente-para-monitoramento-de-f-brica
