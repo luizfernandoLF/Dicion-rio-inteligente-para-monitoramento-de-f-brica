@@ -1,1 +1,2 @@
-# Dicion-rio-inteligente-para-monitoramento-de-f-brica
+# Dicionário-inteligente-para-monitoramento-de-fábrica
+
