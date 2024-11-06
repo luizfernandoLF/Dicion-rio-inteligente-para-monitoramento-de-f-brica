@@ -1,11 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "hash_encadeamento.h"
-
-unsigned int funcao_hashing(t_hash* t, int chave) {
-    return chave % t->tamanho;
-}
+#include "tabela_hash.h"
 
 t_hash* criar_hash(int tamanho) {
     t_hash* nova = malloc(sizeof(t_hash));
@@ -29,6 +25,10 @@ Sensor* cria_sensor(int pump_id, int class_id, double temperature, double vibrat
     s->operational_hours = operational_hours;
     s->maintenance_flag = maintenance_flag;
     return s;
+}
+
+unsigned int funcao_hashing(t_hash* t, int chave) {
+    return chave % t->tamanho;
 }
 
 void inserir_hash(t_hash* t, int chave, Sensor* sensor) {
