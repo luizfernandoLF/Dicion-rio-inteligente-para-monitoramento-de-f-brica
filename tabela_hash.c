@@ -70,31 +70,55 @@ Sensor* buscar_hash(t_hash* t, int chave, FILE* saida) {
     while (atual != NULL) {
         contador_busca++; // Incrementa contador de comparações para busca
         if (atual->chave == chave) {
-            return atual->carga;
+            Sensor* medicao = atual->carga;
+            while (medicao != NULL) {
+                // Imprime todos os campos associados ao sensor
+                fprintf(saida, "Pump_ID: %d, Class_ID: %d, Temperatura: %.2f, Vibracao: %.2f, Pressao: %.2f, "
+                               "Flow_Rate: %.2f, RPM: %.2f, Horas Operacionais: %.2f, Flag de manutencao: %d\n",
+                        medicao->pump_id, medicao->class_id, medicao->temperature, medicao->vibration, medicao->pressure,
+                        medicao->flow_rate, medicao->rpm, medicao->operational_hours, medicao->maintenance_flag);
+                medicao = medicao->prox;
+            }
+            return atual->carga; // Retorna o sensor encontrado
         }
         atual = atual->prox;
     }
+    
     fprintf(saida, "Sensor com Pump_ID %d nao encontrado.\n", chave);
     return NULL;
 }
+
 
 void remover_hash(t_hash* t, int chave, FILE* saida) {
     unsigned int pos = funcao_hashing(t, chave);
     t_elem_hash* atual = t->vetor[pos];
     t_elem_hash* anterior = NULL;
 
+    // Localiza o elemento a ser removido
     while (atual != NULL && atual->chave != chave) {
-        contador_remocao++; // Incrementa contador de comparações para remoção
+        contador_remocao++;
         anterior = atual;
         atual = atual->prox;
     }
 
+    // Caso o elemento não seja encontrado
     if (atual == NULL) {
         fprintf(saida, "Sensor com Pump_ID %d nao encontrado.\n", chave);
         return;
     }
 
+    // Imprime as medições antes de remover
     Sensor* medicao = atual->carga;
+    while (medicao != NULL) {
+        fprintf(saida, "Pump_ID: %d, Class_ID: %d, Temperatura: %.2f, Vibracao: %.2f, Pressao: %.2f, "
+                       "Flow_Rate: %.2f, RPM: %.2f, Horas Operacionais: %.2f, Flag de manutencao: %d\n",
+                medicao->pump_id, medicao->class_id, medicao->temperature, medicao->vibration, medicao->pressure,
+                medicao->flow_rate, medicao->rpm, medicao->operational_hours, medicao->maintenance_flag);
+        medicao = medicao->prox;
+    }
+
+    // Remove o sensor da lista
+    medicao = atual->carga;
     while (medicao != NULL) {
         Sensor* temp = medicao;
         medicao = medicao->prox;
@@ -110,6 +134,7 @@ void remover_hash(t_hash* t, int chave, FILE* saida) {
     free(atual);
     fprintf(saida, "Sensor com Pump_ID %d removido.\n", chave);
 }
+
 
 void gerar_relatorio(t_hash* t, const char* comando, int chave, FILE* saida) {
     Sensor* sensor = buscar_hash(t, chave, saida);
