@@ -43,16 +43,7 @@ int main(int argc, char* argv[]) {
 
         } else if (strcmp(comando, "SEARCH") == 0) {
             fscanf(entrada, "%d", &pump_id);
-            Sensor* sensor = buscar_hash(tabela, pump_id, saida);
-            if (sensor != NULL) {
-                Sensor* medicao = sensor;
-                while (medicao != NULL) {
-                    fprintf(saida, "Pump_ID: %d, Class_ID: %d, Temperatura: %.2f, Vibracao: %.2f, Pressao: %.2f\n",
-                            medicao->pump_id, medicao->class_id, medicao->temperature,
-                            medicao->vibration, medicao->pressure);
-                    medicao = medicao->prox;
-                }
-            }
+            buscar_hash(tabela, pump_id, saida); // Aqui chamamos buscar_hash apenas para a saída
 
         } else if (strcmp(comando, "REMOVE") == 0) {
             fscanf(entrada, "%d", &pump_id);
