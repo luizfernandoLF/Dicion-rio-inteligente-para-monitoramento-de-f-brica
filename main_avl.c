@@ -83,5 +83,8 @@ int main(int argc, char* argv[]) {
 
     fclose(entrada);
     fclose(saida);
+
+    imprimirContadores();  // Exibe os contadores de comparações no terminal
+
     return 0;
 }
