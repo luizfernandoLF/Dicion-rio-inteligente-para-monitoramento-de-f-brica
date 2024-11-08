@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include "arvoreavl.h"
 
-// Contadores de comparações
 int contador_insercao = 0;
 int contador_remocao = 0;
 int contador_busca = 0;
