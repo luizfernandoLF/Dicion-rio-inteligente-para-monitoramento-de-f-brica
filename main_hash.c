@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
     const char* arquivo_entrada = argv[1];
     const char* arquivo_saida = argv[2];
 
-    t_hash* tabela = criar_hash(1000);  
+    t_hash* tabela = criar_hash(1000);
 
     FILE* entrada = fopen(arquivo_entrada, "r");
     if (!entrada) {
@@ -70,5 +70,8 @@ int main(int argc, char* argv[]) {
 
     fclose(entrada);
     fclose(saida);
+
+    imprimirContadores();
+
     return 0;
 }
