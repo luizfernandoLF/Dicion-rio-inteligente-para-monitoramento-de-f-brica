@@ -3,6 +3,10 @@
 #include <string.h>
 #include "tabela_hash.h"
 
+int contador_insercao = 0;
+int contador_busca = 0;
+int contador_remocao = 0;
+
 t_hash* criar_hash(int tamanho) {
     t_hash* nova = malloc(sizeof(t_hash));
     nova->tamanho = tamanho;
@@ -37,9 +41,11 @@ void inserir_hash(t_hash* t, int chave, Sensor* sensor, FILE* saida) {
     t_elem_hash* atual = t->vetor[pos];
 
     while (atual != NULL) {
+        contador_insercao++; 
         if (atual->chave == chave) {
             Sensor* medicao_atual = atual->carga;
             while (medicao_atual->prox != NULL) {
+                contador_insercao++;
                 medicao_atual = medicao_atual->prox;
             }
             medicao_atual->prox = sensor;
@@ -62,13 +68,14 @@ Sensor* buscar_hash(t_hash* t, int chave, FILE* saida) {
     t_elem_hash* atual = t->vetor[pos];
 
     while (atual != NULL) {
+        contador_busca++; // Incrementa contador de comparações para busca
         if (atual->chave == chave) {
-            return atual->carga;  
+            return atual->carga;
         }
         atual = atual->prox;
     }
     fprintf(saida, "Sensor com Pump_ID %d nao encontrado.\n", chave);
-    return NULL; 
+    return NULL;
 }
 
 void remover_hash(t_hash* t, int chave, FILE* saida) {
@@ -77,6 +84,7 @@ void remover_hash(t_hash* t, int chave, FILE* saida) {
     t_elem_hash* anterior = NULL;
 
     while (atual != NULL && atual->chave != chave) {
+        contador_remocao++; // Incrementa contador de comparações para remoção
         anterior = atual;
         atual = atual->prox;
     }
@@ -93,7 +101,6 @@ void remover_hash(t_hash* t, int chave, FILE* saida) {
         free(temp);
     }
 
-    
     if (anterior == NULL) {
         t->vetor[pos] = atual->prox;
     } else {
@@ -143,4 +150,10 @@ void gerar_relatorio(t_hash* t, const char* comando, int chave, FILE* saida) {
         fprintf(saida, "Minimo das medições do sensor com Pump_ID %d: Temperatura=%.2f, Vibração=%.2f, Pressão=%.2f\n",
                chave, min_temperature, min_vibration, min_pressure);
     }
+}
+
+void imprimirContadores() {
+    printf("Funcao de insercao fez %d comparacoes\n", contador_insercao);
+    printf("Funcao de busca fez %d comparacoes\n", contador_busca);
+    printf("Funcao de remocao fez %d comparacoes\n", contador_remocao);
 }
