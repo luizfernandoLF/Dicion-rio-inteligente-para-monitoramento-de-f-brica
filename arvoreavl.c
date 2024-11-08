@@ -2,13 +2,6 @@
 #include <stdlib.h>
 #include "arvoreavl.h"
 
-typedef struct No {
-    int chave;
-    struct No *esquerda;
-    struct No *direita;
-    int altura;
-} No;
-
 int altura(No *N) {
     if (N == NULL)
         return 0;
@@ -20,23 +13,22 @@ int max(int a, int b) {
 }
 
 No* novoNo(int chave) {
-    No* No = (No*)malloc(sizeof(No));
-    No->chave = chave;
-    No->esquerda = NULL;
-    No->direita = NULL;
-    No->altura = 1;
-    return No;
+    No* nodo = malloc(sizeof(No));
+    nodo->chave = chave;
+    nodo->esquerda = NULL;
+    nodo->direita = NULL;
+    nodo->altura = 1;
+    nodo->medicoes = NULL;  // Inicializa a lista de medições como vazia
+    return nodo;
 }
 
 No *rotacaoDir(No *y) {
     No *x = y->esquerda;
     No *T2 = x->direita;
 
-    // Rotaciona
     x->direita = y;
     y->esquerda = T2;
 
-    // Atualiza as alturas
     y->altura = max(altura(y->esquerda), altura(y->direita)) + 1;
     x->altura = max(altura(x->esquerda), altura(x->direita)) + 1;
 
@@ -50,7 +42,6 @@ No *rotacaoEsq(No *x) {
     y->esquerda = x;
     x->direita = T2;
 
-    // Atualiza as alturas
     x->altura = max(altura(x->esquerda), altura(x->direita)) + 1;
     y->altura = max(altura(y->esquerda), altura(y->direita)) + 1;
 
@@ -63,50 +54,43 @@ int fatorBalanc(No *N) {
     return altura(N->esquerda) - altura(N->direita);
 }
 
-No* inserirNo(No* No, int chave) {
-    if (No == NULL)
-        return novoNo(chave);
-    if (chave < No->chave)
-        No->esquerda = inserirNo(No->esquerda, chave);
-    else if (chave > No->chave)
-        No->direita = inserirNo(No->direita, chave);
-    else // Chaves duplicadas não são permitidas
-        return No;
-
-    // Atualiza a altura deste ancestral
-    No->altura = 1 + max(altura(No->esquerda), altura(No->direita));
-
-    // fator de balanceamentoamento deste ancestral
-    int balanceamento = fatorBalanc(No);
-
-    // Se este nó se tornar desbalanceamentoado, então há 4 casos
-
-    // Caso Esquerda-Esquerda
-    if (balanceamento > 1 && chave < No->esquerda->chave)
-        return rotacaoDir(No);
-
-    // Caso Direita-Direita
-    if (balanceamento < -1 && chave > No->direita->chave)
-        return rotacaoEsq(No);
-
-    // Caso Esquerda-Direita
-    if (balanceamento > 1 && chave > No->esquerda->chave) {
-        No->esquerda = rotacaoEsq(No->esquerda);
-        return rotacaoDir(No);
+No* inserirNo(No* raiz, int chave, double temperatura, double vibracao, double pressao) {
+    if (raiz == NULL) {
+        No* novo = novoNo(chave);
+        adicionarMedicao(novo, temperatura, vibracao, pressao);
+        return novo;
     }
 
-    // Caso Direita-Esquerda
-    if (balanceamento < -1 && chave < No->direita->chave) {
-        No->direita = rotacaoDir(No->direita);
-        return rotacaoEsq(No);
+    if (chave < raiz->chave)
+        raiz->esquerda = inserirNo(raiz->esquerda, chave, temperatura, vibracao, pressao);
+    else if (chave > raiz->chave)
+        raiz->direita = inserirNo(raiz->direita, chave, temperatura, vibracao, pressao);
+    else {
+        adicionarMedicao(raiz, temperatura, vibracao, pressao);
+        return raiz;
     }
 
-    return No;
+    raiz->altura = 1 + max(altura(raiz->esquerda), altura(raiz->direita));
+    int balanceamento = fatorBalanc(raiz);
+
+    if (balanceamento > 1 && chave < raiz->esquerda->chave)
+        return rotacaoDir(raiz);
+    if (balanceamento < -1 && chave > raiz->direita->chave)
+        return rotacaoEsq(raiz);
+    if (balanceamento > 1 && chave > raiz->esquerda->chave) {
+        raiz->esquerda = rotacaoEsq(raiz->esquerda);
+        return rotacaoDir(raiz);
+    }
+    if (balanceamento < -1 && chave < raiz->direita->chave) {
+        raiz->direita = rotacaoDir(raiz->direita);
+        return rotacaoEsq(raiz);
+    }
+
+    return raiz;
 }
 
-// Função para encontrar o nó com o valor mínimo
-No *noDeValorMinimo(No *No) {
-    No *atual = No;
+No *noDeValorMinimo(No *nodo) {
+    No* atual = nodo;
     while (atual->esquerda != NULL)
         atual = atual->esquerda;
     return atual;
@@ -115,6 +99,7 @@ No *noDeValorMinimo(No *No) {
 No* removerNo(No* raiz, int chave) {
     if (raiz == NULL)
         return raiz;
+
     if (chave < raiz->chave)
         raiz->esquerda = removerNo(raiz->esquerda, chave);
     else if (chave > raiz->chave)
@@ -139,7 +124,6 @@ No* removerNo(No* raiz, int chave) {
         return raiz;
 
     raiz->altura = 1 + max(altura(raiz->esquerda), altura(raiz->direita));
-
     int balanceamento = fatorBalanc(raiz);
 
     if (balanceamento > 1 && fatorBalanc(raiz->esquerda) >= 0)
@@ -168,44 +152,63 @@ No* buscarNo(No* raiz, int chave) {
     return buscarNo(raiz->direita, chave);
 }
 
-void imprimirArvore(No *raiz) {
-    if (raiz != NULL) {
-        imprimirArvore(raiz->esquerda);
-        printf("%d ", raiz->chave);
-        imprimirArvore(raiz->direita);
-    }
+Medicao* novaMedicao(double temperatura, double vibracao, double pressao) {
+    Medicao* medicao = malloc(sizeof(Medicao));
+    medicao->temperatura = temperatura;
+    medicao->vibracao = vibracao;
+    medicao->pressao = pressao;
+    medicao->prox = NULL;
+    return medicao;
 }
 
-// Função principal
-int main() {
-    No *raiz = NULL;
+void adicionarMedicao(No* sensor, double temperatura, double vibracao, double pressao) {
+    Medicao* nova = novaMedicao(temperatura, vibracao, pressao);
+    nova->prox = sensor->medicoes;
+    sensor->medicoes = nova;
+}
 
-    // Inserções
-    raiz = inserirNo(raiz, 10);
-    raiz = inserirNo(raiz, 20);
-    raiz = inserirNo(raiz, 30);
-    raiz = inserirNo(raiz, 40);
-    raiz = inserirNo(raiz, 50);
-    raiz = inserirNo(raiz, 25);
-
-    // Impressão da árvore em ordem
-    printf("Árvore em ordem: ");
-    imprimirArvore(raiz);
-    printf("\n");
-
-    // Remoção de um nó
-    raiz = removerNo(raiz, 30);
-    printf("Árvore após remoção de 30: ");
-    imprimirArvore(raiz);
-    printf("\n");
-
-    // Busca de um nó
-    No *result = buscarNo(raiz, 20);
-    if (result != NULL) {
-        printf("Nó encontrado: %d\n", result->chave);
-    } else {
-        printf("Nó não encontrado.\n");
+double calcularMediaMedicoes(No* sensor) {
+    if (sensor->medicoes == NULL) {
+        return 0.0;
     }
 
-    return 0;
+    double soma = 0.0;
+    int count = 0;
+    Medicao* atual = sensor->medicoes;
+
+    while (atual != NULL) {
+        soma += (atual->temperatura + atual->vibracao + atual->pressao) / 3.0;
+        count++;
+        atual = atual->prox;
+    }
+
+    return (count > 0) ? (soma / count) : 0.0;
+}
+
+double maxMedicao(No* sensor) {
+    double max_valor = sensor->medicoes->temperatura;
+    Medicao* atual = sensor->medicoes;
+
+    while (atual != NULL) {
+        if (atual->temperatura > max_valor) max_valor = atual->temperatura;
+        if (atual->vibracao > max_valor) max_valor = atual->vibracao;
+        if (atual->pressao > max_valor) max_valor = atual->pressao;
+        atual = atual->prox;
+    }
+
+    return max_valor;
+}
+
+double minMedicao(No* sensor) {
+    double min_valor = sensor->medicoes->temperatura;
+    Medicao* atual = sensor->medicoes;
+
+    while (atual != NULL) {
+        if (atual->temperatura < min_valor) min_valor = atual->temperatura;
+        if (atual->vibracao < min_valor) min_valor = atual->vibracao;
+        if (atual->pressao < min_valor) min_valor = atual->pressao;
+        atual = atual->prox;
+    }
+
+    return min_valor;
 }
