@@ -25,8 +25,8 @@ No *rotacaoEsq(No *x);
 No* removerNo(No* raiz, int chave);
 No* buscarNo(No* raiz, int chave);
 double calcularMediaMedicoes(No* sensor); 
-double maxMedicao(No* sensor);  // Declaração adicionada
-double minMedicao(No* sensor);  // Declaração adicionada
+double maxMedicao(No* sensor);  
+double minMedicao(No* sensor);  
 
 void imprimirContadores();
 
