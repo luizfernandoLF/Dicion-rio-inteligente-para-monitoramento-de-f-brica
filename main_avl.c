@@ -6,19 +6,28 @@
 void executar_comandos(FILE* entrada, FILE* saida) {
     No* raiz = NULL;
     char comando[10];
-    int chave;
+    int chave, classID;
     double temperatura, vibracao, pressao;
 
     while (fscanf(entrada, "%s", comando) != EOF) {
         if (strcmp(comando, "ADD") == 0) {
-            if (fscanf(entrada, "%d %lf %lf %lf", &chave, &temperatura, &vibracao, &pressao) == 4) {
-                raiz = inserirNo(raiz, chave, temperatura, vibracao, pressao);
+            if (fscanf(entrada, "%d %d %lf %lf %lf", &chave, &classID, &temperatura, &vibracao, &pressao) == 5) {
+                raiz = inserirNo(raiz, chave, classID, temperatura, vibracao, pressao);
                 fprintf(saida, "Sensor com Pump_ID %d adicionado.\n", chave);
             }
         } else if (strcmp(comando, "REMOVE") == 0) {
             if (fscanf(entrada, "%d", &chave) == 1) {
+                No* resultado = buscarNo(raiz, chave);
                 raiz = removerNo(raiz, chave);
-                fprintf(saida, "Sensor com Pump_ID %d removido.\n", chave);
+                if (raiz != NULL) {
+                    Medicao* medicao = resultado->medicoes;
+                    fprintf(saida, "Sensor com Pump_ID %d removido.\nDados:\n", chave);
+                    fprintf(saida, "Pump_ID: %d, Class_ID: %d, Temperatura: %.2f, Vibracao: %.2f, Pressao: %.2f\n",
+                                resultado->chave, resultado->classID,
+                                medicao->temperatura, medicao->vibracao, medicao->pressao);
+                } else {
+                    fprintf(saida, "Sensor com Pump_ID %d não encontrado.\n", chave);
+                }
             }
         } else if (strcmp(comando, "SEARCH") == 0) {
             if (fscanf(entrada, "%d", &chave) == 1) {
@@ -26,13 +35,14 @@ void executar_comandos(FILE* entrada, FILE* saida) {
                 if (resultado != NULL) {
                     Medicao* medicao = resultado->medicoes;
                     while (medicao != NULL) {
+                        fprintf(saida, "Sensor com Pump_ID %d encontrado!\nDados:\n", chave);
                         fprintf(saida, "Pump_ID: %d, Class_ID: %d, Temperatura: %.2f, Vibracao: %.2f, Pressao: %.2f\n",
-                                resultado->chave, 1,  // Class_ID é fixo como 1 para exemplo; ajuste conforme necessário
+                                resultado->chave, resultado->classID,
                                 medicao->temperatura, medicao->vibracao, medicao->pressao);
                         medicao = medicao->prox;
                     }
                 } else {
-                    fprintf(saida, "Sensor com Pump_ID %d nao encontrado.\n", chave);
+                    fprintf(saida, "Sensor com Pump_ID %d não encontrado.\n", chave);
                 }
             }
         } else if (strcmp(comando, "REPORT") == 0) {
