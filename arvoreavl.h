@@ -8,6 +8,7 @@ typedef struct Medicao {
 
 typedef struct No {
     int chave;
+    int classID;
     Medicao* medicoes;  
     struct No* esquerda;
     struct No* direita;
@@ -16,8 +17,8 @@ typedef struct No {
 
 int altura(No *N);
 int max(int a, int b);
-No* novoNo(int chave);
-No* inserirNo(No* raiz, int chave, double temperatura, double vibracao, double pressao);
+No* novoNo(int chave, int classID);
+No* inserirNo(No* raiz, int chave, int classID, double temperatura, double vibracao, double pressao);
 void adicionarMedicao(No* sensor, double temperatura, double vibracao, double pressao);
 int fatorBalanc(No *N);
 No *rotacaoDir(No *y);
@@ -29,5 +30,3 @@ double maxMedicao(No* sensor);
 double minMedicao(No* sensor);  
 
 void imprimirContadores();
-
-
