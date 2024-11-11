@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
 
         } else if (strcmp(comando, "SEARCH") == 0) {
             fscanf(entrada, "%d", &pump_id);
-            buscar_hash(tabela, pump_id, saida); 
+            buscar_hash(tabela, pump_id, saida); // Aqui chamamos buscar_hash apenas para a saída
 
         } else if (strcmp(comando, "REMOVE") == 0) {
             fscanf(entrada, "%d", &pump_id);
