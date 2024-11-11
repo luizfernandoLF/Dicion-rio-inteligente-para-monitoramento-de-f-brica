@@ -68,18 +68,18 @@ Sensor* buscar_hash(t_hash* t, int chave, FILE* saida) {
     t_elem_hash* atual = t->vetor[pos];
 
     while (atual != NULL) {
-        contador_busca++; // Incrementa contador de comparações para busca
+        contador_busca++;
         if (atual->chave == chave) {
             Sensor* medicao = atual->carga;
+            fprintf(saida,"SENSOR ENCONTRADO ↓\n");
             while (medicao != NULL) {
-                // Imprime todos os campos associados ao sensor
                 fprintf(saida, "Pump_ID: %d, Class_ID: %d, Temperatura: %.2f, Vibracao: %.2f, Pressao: %.2f, "
                                "Flow_Rate: %.2f, RPM: %.2f, Horas Operacionais: %.2f, Flag de manutencao: %d\n",
                         medicao->pump_id, medicao->class_id, medicao->temperature, medicao->vibration, medicao->pressure,
                         medicao->flow_rate, medicao->rpm, medicao->operational_hours, medicao->maintenance_flag);
                 medicao = medicao->prox;
             }
-            return atual->carga; // Retorna o sensor encontrado
+            return atual->carga;
         }
         atual = atual->prox;
     }
@@ -88,38 +88,28 @@ Sensor* buscar_hash(t_hash* t, int chave, FILE* saida) {
     return NULL;
 }
 
-
 void remover_hash(t_hash* t, int chave, FILE* saida) {
     unsigned int pos = funcao_hashing(t, chave);
     t_elem_hash* atual = t->vetor[pos];
     t_elem_hash* anterior = NULL;
 
-    // Localiza o elemento a ser removido
     while (atual != NULL && atual->chave != chave) {
         contador_remocao++;
         anterior = atual;
         atual = atual->prox;
     }
 
-    // Caso o elemento não seja encontrado
     if (atual == NULL) {
         fprintf(saida, "Sensor com Pump_ID %d nao encontrado.\n", chave);
         return;
     }
 
-    // Imprime as medições antes de remover
     Sensor* medicao = atual->carga;
     while (medicao != NULL) {
-        fprintf(saida, "Pump_ID: %d, Class_ID: %d, Temperatura: %.2f, Vibracao: %.2f, Pressao: %.2f, "
+        fprintf(saida, "Removendo - Pump_ID: %d, Class_ID: %d, Temperatura: %.2f, Vibracao: %.2f, Pressao: %.2f, "
                        "Flow_Rate: %.2f, RPM: %.2f, Horas Operacionais: %.2f, Flag de manutencao: %d\n",
                 medicao->pump_id, medicao->class_id, medicao->temperature, medicao->vibration, medicao->pressure,
                 medicao->flow_rate, medicao->rpm, medicao->operational_hours, medicao->maintenance_flag);
-        medicao = medicao->prox;
-    }
-
-    // Remove o sensor da lista
-    medicao = atual->carga;
-    while (medicao != NULL) {
         Sensor* temp = medicao;
         medicao = medicao->prox;
         free(temp);
@@ -135,6 +125,62 @@ void remover_hash(t_hash* t, int chave, FILE* saida) {
     fprintf(saida, "Sensor com Pump_ID %d removido.\n", chave);
 }
 
+void calcularMedia(Sensor* sensor, FILE* saida) {
+    double total_temperature = 0, total_vibration = 0, total_pressure = 0;
+    int count = 0;
+    Sensor* medicao = sensor;
+
+    while (medicao != NULL) {
+        total_temperature += medicao->temperature;
+        total_vibration += medicao->vibration;
+        total_pressure += medicao->pressure;
+        count++;
+        medicao = medicao->prox;
+    }
+
+    if (count > 0) {
+        fprintf(saida, "Média das medições do sensor %d: Temperatura=%.2f, Vibracao=%.2f, Pressao=%.2f\n",
+                sensor->pump_id, total_temperature / count, total_vibration / count, total_pressure / count);
+    }
+}
+
+void maxMedicao(Sensor* sensor, FILE* saida) {
+    if (sensor == NULL) return;
+
+    double max_temperature = sensor->temperature;
+    double max_vibration = sensor->vibration;
+    double max_pressure = sensor->pressure;
+
+    Sensor* medicao = sensor->prox;
+    while (medicao != NULL) {
+        if (medicao->temperature > max_temperature) max_temperature = medicao->temperature;
+        if (medicao->vibration > max_vibration) max_vibration = medicao->vibration;
+        if (medicao->pressure > max_pressure) max_pressure = medicao->pressure;
+        medicao = medicao->prox;
+    }
+
+    fprintf(saida, "Máximo das medições do sensor %d: Temperatura=%.2f, Vibracao=%.2f, Pressao=%.2f\n",
+            sensor->pump_id, max_temperature, max_vibration, max_pressure);
+}
+
+void minMedicao(Sensor* sensor, FILE* saida) {
+    if (sensor == NULL) return;
+
+    double min_temperature = sensor->temperature;
+    double min_vibration = sensor->vibration;
+    double min_pressure = sensor->pressure;
+
+    Sensor* medicao = sensor->prox;
+    while (medicao != NULL) {
+        if (medicao->temperature < min_temperature) min_temperature = medicao->temperature;
+        if (medicao->vibration < min_vibration) min_vibration = medicao->vibration;
+        if (medicao->pressure < min_pressure) min_pressure = medicao->pressure;
+        medicao = medicao->prox;
+    }
+
+    fprintf(saida, "Mínimo das medições do sensor %d: Temperatura=%.2f, Vibracao=%.2f, Pressao=%.2f\n",
+            sensor->pump_id, min_temperature, min_vibration, min_pressure);
+}
 
 void gerar_relatorio(t_hash* t, const char* comando, int chave, FILE* saida) {
     Sensor* sensor = buscar_hash(t, chave, saida);
@@ -142,38 +188,12 @@ void gerar_relatorio(t_hash* t, const char* comando, int chave, FILE* saida) {
         return;
     }
 
-    double total_temperature = 0, total_vibration = 0, total_pressure = 0;
-    double max_temperature = sensor->temperature, max_vibration = sensor->vibration, max_pressure = sensor->pressure;
-    double min_temperature = sensor->temperature, min_vibration = sensor->vibration, min_pressure = sensor->pressure;
-    int count = 0;
-
-    Sensor* medicao = sensor;
-    while (medicao != NULL) {
-        total_temperature += medicao->temperature;
-        total_vibration += medicao->vibration;
-        total_pressure += medicao->pressure;
-
-        if (medicao->temperature > max_temperature) max_temperature = medicao->temperature;
-        if (medicao->vibration > max_vibration) max_vibration = medicao->vibration;
-        if (medicao->pressure > max_pressure) max_pressure = medicao->pressure;
-
-        if (medicao->temperature < min_temperature) min_temperature = medicao->temperature;
-        if (medicao->vibration < min_vibration) min_vibration = medicao->vibration;
-        if (medicao->pressure < min_pressure) min_pressure = medicao->pressure;
-
-        count++;
-        medicao = medicao->prox;
-    }
-
     if (strcmp(comando, "MEAN") == 0) {
-        fprintf(saida, "Media das medições do sensor com Pump_ID %d: Temperatura=%.2f, Vibração=%.2f, Pressão=%.2f\n",
-               chave, total_temperature / count, total_vibration / count, total_pressure / count);
+        calcularMedia(sensor, saida);
     } else if (strcmp(comando, "MAX") == 0) {
-        fprintf(saida, "Maximo das medições do sensor com Pump_ID %d: Temperatura=%.2f, Vibração=%.2f, Pressão=%.2f\n",
-               chave, max_temperature, max_vibration, max_pressure);
+        maxMedicao(sensor, saida);
     } else if (strcmp(comando, "MIN") == 0) {
-        fprintf(saida, "Minimo das medições do sensor com Pump_ID %d: Temperatura=%.2f, Vibração=%.2f, Pressão=%.2f\n",
-               chave, min_temperature, min_vibration, min_pressure);
+        minMedicao(sensor, saida);
     }
 }
 
