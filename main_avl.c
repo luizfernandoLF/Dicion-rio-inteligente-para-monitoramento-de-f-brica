@@ -17,7 +17,7 @@ void executar_comandos(FILE* entrada, FILE* saida) {
             }
         } else if (strcmp(comando, "REMOVE") == 0) {
             if (fscanf(entrada, "%d", &chave) == 1) {
-                No* resultado = buscarNo(raiz, chave);
+                No* resultado = buscarNoRemocao(raiz, chave);
                 raiz = removerNo(raiz, chave);
                 if (raiz != NULL) {
                     Medicao* medicao = resultado->medicoes;
@@ -35,6 +35,7 @@ void executar_comandos(FILE* entrada, FILE* saida) {
                 if (resultado != NULL) {
                     Medicao* medicao = resultado->medicoes;
                     while (medicao != NULL) {
+                        fprintf(saida, "Buscando...\n");
                         fprintf(saida, "Sensor com Pump_ID %d encontrado!\nDados:\n", chave);
                         fprintf(saida, "Pump_ID: %d, Class_ID: %d, Temperatura: %.2f, Vibracao: %.2f, Pressao: %.2f\n",
                                 resultado->chave, resultado->classID,
