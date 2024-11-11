@@ -1,4 +1,3 @@
-
 typedef struct Medicao {
     double temperatura;
     double vibracao;
@@ -25,6 +24,7 @@ No *rotacaoDir(No *y);
 No *rotacaoEsq(No *x);
 No* removerNo(No* raiz, int chave);
 No* buscarNo(No* raiz, int chave);
+No* buscarNoRemocao(No* raiz, int chave);
 double calcularMediaMedicoes(No* sensor); 
 double maxMedicao(No* sensor);  
 double minMedicao(No* sensor);  
