@@ -5,10 +5,12 @@
 int contador_insercao = 0;
 int contador_remocao = 0;
 int contador_busca = 0;
+int contadorMovimentacoes = 0;
 
 int altura(No *N) {
+    contador_insercao++;
     if (N == NULL)
-        return 0;
+        return -1;
     return N->altura;
 }
 
@@ -28,6 +30,7 @@ No* novoNo(int chave, int classID) {
 }
 
 No *rotacaoDir(No *y) {
+    contadorMovimentacoes++;
     No *x = y->esquerda;
     No *T2 = x->direita;
 
@@ -41,6 +44,7 @@ No *rotacaoDir(No *y) {
 }
 
 No *rotacaoEsq(No *x) {
+    contadorMovimentacoes++;
     No *y = x->direita;
     No *T2 = y->esquerda;
 
@@ -54,6 +58,7 @@ No *rotacaoEsq(No *x) {
 }
 
 int fatorBalanc(No *N) {
+    contador_insercao;
     if (N == NULL)
         return 0;
     return altura(N->esquerda) - altura(N->direita);
@@ -61,15 +66,17 @@ int fatorBalanc(No *N) {
 
 No* inserirNo(No* raiz, int chave, int classID, double temperatura, double vibracao, double pressao) {
     if (raiz == NULL) {
+        contador_insercao++;
         No* novo = novoNo(chave, classID);
         adicionarMedicao(novo, temperatura, vibracao, pressao);
         return novo;
     }
 
-    contador_insercao++;
     if (chave < raiz->chave) {
+        contador_insercao++;
         raiz->esquerda = inserirNo(raiz->esquerda, chave, classID, temperatura, vibracao, pressao);
     } else if (chave > raiz->chave) {
+        contador_insercao++;
         raiz->direita = inserirNo(raiz->direita, chave, classID, temperatura, vibracao, pressao);
     } else {
         adicionarMedicao(raiz, temperatura, vibracao, pressao);
@@ -107,9 +114,29 @@ No *noDeValorMinimo(No *nodo) {
 No* buscarNo(No* raiz, int chave) {
     contador_busca++;
     while (raiz != NULL) {
+        contador_busca++;
         if (chave == raiz->chave) {
+            contador_busca++;
             return raiz;
         } else if (chave < raiz->chave) {
+            contador_busca++;
+            raiz = raiz->esquerda;
+        } else {
+            raiz = raiz->direita;
+        }
+    }
+    return NULL;
+}
+
+No* buscarNoRemocao(No* raiz, int chave) {
+    contador_remocao++;
+    while (raiz != NULL) {
+        contador_remocao++;
+        if (chave == raiz->chave) {
+            contador_remocao++;
+            return raiz;
+        } else if (chave < raiz->chave) {
+            contador_remocao++;
             raiz = raiz->esquerda;
         } else {
             raiz = raiz->direita;
@@ -140,11 +167,14 @@ No* removerNo(No* raiz, int chave) {
 
     // Caso 1: Nó a ser removido é uma folha
     if (atual->esquerda == NULL && atual->direita == NULL) {
+        contador_remocao++;
         if (atual == raiz) {
+            contador_remocao++;
             free(atual);
             return NULL; // A árvore fica vazia
         }
         if (pai->esquerda == atual) {
+            contador_remocao++;
             pai->esquerda = NULL;
         } else {
             pai->direita = NULL;
@@ -152,12 +182,16 @@ No* removerNo(No* raiz, int chave) {
     }
     // Caso 2: Nó a ser removido tem um filho
     else if (atual->esquerda == NULL || atual->direita == NULL) {
+        contador_remocao++;
         No* filho = (atual->esquerda != NULL) ? atual->esquerda : atual->direita;
+        contador_remocao++;
         if (atual == raiz) {
+            contador_remocao++;
             free(atual);
             return filho; // Retorna o filho como nova raiz
         }
         if (pai->esquerda == atual) {
+            contador_remocao++;
             pai->esquerda = filho;
         } else {
             pai->direita = filho;
@@ -170,6 +204,7 @@ No* removerNo(No* raiz, int chave) {
         No* paiSucessor = atual;
 
         while (sucessor->esquerda != NULL) {
+            contador_remocao++;
             paiSucessor = sucessor;
             sucessor = sucessor->esquerda;
         }
@@ -179,6 +214,7 @@ No* removerNo(No* raiz, int chave) {
 
         // Remove o sucessor
         if (paiSucessor->esquerda == sucessor) {
+            contador_remocao++;
             paiSucessor->esquerda = sucessor->direita;
         } else {
             paiSucessor->direita = sucessor->direita;
@@ -228,6 +264,7 @@ void imprimirContadores() {
     printf("Funcao de insercao fez %d comparacoes\n", contador_insercao);
     printf("Funcao de remocao fez %d comparacoes\n", contador_remocao);
     printf("Funcao de busca fez %d comparacoes\n", contador_busca);
+    printf("A arvore AVL fez %d movimentacoes\n", contadorMovimentacoes);
 }
 
 double maxMedicao(No* sensor) {
