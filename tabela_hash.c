@@ -48,6 +48,7 @@ void inserir_hash(t_hash* t, int chave, Sensor* sensor, FILE* saida) {
     while (atual != NULL) {
         contador_insercao_comp++; 
         if (atual->chave == chave) {
+            contador_insercao_comp++;
             Sensor* medicao_atual = atual->carga;
             while (medicao_atual->prox != NULL) {
                 contador_insercao_comp++;
@@ -79,8 +80,10 @@ Sensor* buscar_hash(t_hash* t, int chave, FILE* saida) {
     while (atual != NULL) {
         contador_busca_comp++;
         if (atual->chave == chave) {
+            contador_busca_comp++;
             Sensor* medicao = atual->carga;
             while (medicao != NULL) {
+                contador_busca_comp++;
                 fprintf(saida, "Pump_ID: %d, Class_ID: %d, Temperatura: %.2f, Vibracao: %.2f, Pressao: %.2f, "
                                "Flow_Rate: %.2f, RPM: %.2f, Horas Operacionais: %.2f, Flag de manutencao: %d\n",
                         medicao->pump_id, medicao->class_id, medicao->temperature, medicao->vibration, medicao->pressure,
