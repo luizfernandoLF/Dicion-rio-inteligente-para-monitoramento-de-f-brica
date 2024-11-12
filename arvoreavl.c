@@ -5,7 +5,9 @@
 int contador_insercao = 0;
 int contador_remocao = 0;
 int contador_busca = 0;
-int contadorMovimentacoes = 0;
+int contadorMovInsercao = 0;
+int contadorMovRemocao = 0;
+
 
 int altura(No *N) {
     contador_insercao++;
@@ -30,7 +32,6 @@ No* novoNo(int chave, int classID) {
 }
 
 No *rotacaoDir(No *y) {
-    contadorMovimentacoes++;
     No *x = y->esquerda;
     No *T2 = x->direita;
 
@@ -44,7 +45,6 @@ No *rotacaoDir(No *y) {
 }
 
 No *rotacaoEsq(No *x) {
-    contadorMovimentacoes++;
     No *y = x->direita;
     No *T2 = y->esquerda;
 
@@ -86,16 +86,26 @@ No* inserirNo(No* raiz, int chave, int classID, double temperatura, double vibra
     raiz->altura = 1 + max(altura(raiz->esquerda), altura(raiz->direita));
     int balanceamento = fatorBalanc(raiz);
 
-    if (balanceamento > 1 && chave < raiz->esquerda->chave)
+    if (balanceamento > 1 && chave < raiz->esquerda->chave){
+        contadorMovInsercao++;
         return rotacaoDir(raiz);
-    if (balanceamento < -1 && chave > raiz->direita->chave)
+    }
+        
+    if (balanceamento < -1 && chave > raiz->direita->chave) {
+        contadorMovInsercao++;
         return rotacaoEsq(raiz);
+    }
+        
     if (balanceamento > 1 && chave > raiz->esquerda->chave) {
+        contadorMovInsercao++;
         raiz->esquerda = rotacaoEsq(raiz->esquerda);
+        contadorMovInsercao++;
         return rotacaoDir(raiz);
     }
     if (balanceamento < -1 && chave < raiz->direita->chave) {
+        contadorMovInsercao++;
         raiz->direita = rotacaoDir(raiz->direita);
+        contadorMovInsercao++;
         return rotacaoEsq(raiz);
     }
 
@@ -153,8 +163,10 @@ No* removerNo(No* raiz, int chave) {
     while (atual != NULL && atual->chave != chave) {
         pai = atual;
         if (chave < atual->chave) {
+            contadorMovRemocao++;
             atual = atual->esquerda;
         } else {
+            contadorMovRemocao++;
             atual = atual->direita;
         }
         contador_remocao++;
@@ -184,6 +196,7 @@ No* removerNo(No* raiz, int chave) {
     else if (atual->esquerda == NULL || atual->direita == NULL) {
         contador_remocao++;
         No* filho = (atual->esquerda != NULL) ? atual->esquerda : atual->direita;
+        contadorMovRemocao++;
         contador_remocao++;
         if (atual == raiz) {
             contador_remocao++;
@@ -192,8 +205,10 @@ No* removerNo(No* raiz, int chave) {
         }
         if (pai->esquerda == atual) {
             contador_remocao++;
+            contadorMovRemocao++;
             pai->esquerda = filho;
         } else {
+            contadorMovRemocao++;
             pai->direita = filho;
         }
     }
@@ -206,7 +221,9 @@ No* removerNo(No* raiz, int chave) {
         while (sucessor->esquerda != NULL) {
             contador_remocao++;
             paiSucessor = sucessor;
+            contadorMovRemocao++;
             sucessor = sucessor->esquerda;
+            contadorMovRemocao++;
         }
 
         // Copia o valor do sucessor para o nó atual
@@ -216,8 +233,10 @@ No* removerNo(No* raiz, int chave) {
         if (paiSucessor->esquerda == sucessor) {
             contador_remocao++;
             paiSucessor->esquerda = sucessor->direita;
+            contadorMovRemocao++;
         } else {
             paiSucessor->direita = sucessor->direita;
+            contadorMovRemocao++;
         }
         atual = sucessor; // Atualiza o nó atual para liberar memória
     }
@@ -261,10 +280,9 @@ double calcularMediaMedicoes(No* sensor) {
 }
 
 void imprimirContadores() {
-    printf("Funcao de insercao fez %d comparacoes\n", contador_insercao);
-    printf("Funcao de remocao fez %d comparacoes\n", contador_remocao);
+    printf("Funcao de insercao fez %d comparacoes e %d movimentacoes\n", contador_insercao, contadorMovInsercao);
+    printf("Funcao de remocao fez %d comparacoes e %d movimentacoes\n", contador_remocao, contadorMovRemocao);
     printf("Funcao de busca fez %d comparacoes\n", contador_busca);
-    printf("A arvore AVL fez %d movimentacoes\n", contadorMovimentacoes);
 }
 
 double maxMedicao(No* sensor) {
