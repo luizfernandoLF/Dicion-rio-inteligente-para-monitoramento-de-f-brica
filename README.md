@@ -50,6 +50,7 @@ Arquivos de Código
     Saída (.out): Arquivos gerados com os resultados das operações executadas, incluindo buscas, remoções e relatórios.
 
 ####Uso####
+
 Compilação
 
 Para compilar os programas, utilize os seguintes comandos:
